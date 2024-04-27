@@ -82,7 +82,14 @@
         <div id="fishbox">
             <div id="fishboxWater" x-show="isShowtime">
                 <template x-for="currFish in fish" x-key="1">
-                    <div class="fish" x-text="currFish.icon" :style="{ animationDelay: currFish.animationDelay, fontSize: 'calc(var(--fish-font-size) * '+ currFish.scale + ')', transform: 'scaleX('+(currFish.mirrored?'-':'')+'1) rotate('+currFish.angleTurn+'turn)', top: currFish.x+'%', left: currFish.y+'%', filter: 'hue-rotate('+currFish.hueAngle+'deg)' }">
+                    <div class="fish" x-text="currFish.icon" :style="{ 
+                        animationDelay: currFish.animationDelay, 
+                        fontSize: 'calc(var(--fish-font-size) * '+ currFish.scale + ')', 
+                        transform: 'scaleX('+currFish.scaleX+') rotate('+currFish.angleTurn+'turn)', 
+                        top: currFish.x+'%', 
+                        left: currFish.y+'%', 
+                        filter: 'hue-rotate('+currFish.hueAngle+'deg)' 
+                    }">
                     </div>
                 </template>
             </div>
@@ -101,6 +108,7 @@
                 firstShowtimeCheck: true,
 
                 colorfulEmoji: ['🐟', '🐚', '🦴',],
+                torpedoEmoji: ['🐟', '🐠', '🦑', '🐡',],
 
                 chooseEmoji() {
                     return chance.weighted([
@@ -196,13 +204,20 @@
                             mirrored: chance.bool(),
                             angleTurn: chance.floating({ min: -0.05, max: 0.05}),
                             hueAngle: 0,
-                            animationDelay: chance.floating({ min: 0, max: 2.5}) + 's'
+                            animationDelay: chance.floating({ min: 0, max: 2.5}) + 's',
                         }
                         newFish.icon = this.chooseEmoji();
                         if (this.colorfulEmoji.indexOf(newFish.icon) > -1) {
                             newFish.hueAngle = chance.weighted([true, false], [3, 1])?chance.floating({ min: 0, max: 360 }):0;
                         }
+                        if (this.torpedoEmoji.indexOf(newFish.icon) > -1) {
+                            //newFish.torpedoScale = chance.weighted([true, false], [1, 20])?chance.floating({ min: 1.4, max: 3}):1;
+                            newFish.torpedoScale = 1; /* disable torpedos -- scaling is not crisp */
+                        } else {
+                            newFish.torpedoScale = 1
+                        }
                         newFish.value = this.nextFishId++;
+                        newFish.scaleX = newFish.mirrored?-1:1 * newFish.torpedoScale
                         this.fish.push(newFish);
                     });
                     let boundingSquare = [
