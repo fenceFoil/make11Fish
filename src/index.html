@@ -16,11 +16,7 @@
         }
 
         #app {
-            background-color: black;
-            background-image: url(waterbg.jpg);
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
+            background-color: darkblue;
             min-height: 100vh;
             margin: 0;
             color: ivory;
@@ -37,7 +33,11 @@
             place-items: center;
             width: 80vmin;
             height: 80vmin;
-            background-color: blue;
+            background-color: skyblue;
+            background-image: url(waterbg.webp), url(waterbg-preview.webp);
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
             border: solid 0.3vmin white;
         }
         
@@ -90,8 +90,8 @@
     </div>
     <script src="fitty.min.js"></script>
     <script src="alpine.3.9.6.min.js" defer></script>
-    <script src="lodash.min.js"></script>
     <script src="chance.min.js"></script>
+    <script src="confetti.browser.min.js"></script>
     <script type="text/javascript" src="voronoijs.min.js"></script>
     <script>
         //fitty('.facecard .name');
@@ -130,7 +130,7 @@
                         30,
                         10,
                         10,
-                        30,
+                        50,
                         3,
                         3,
                         7,
@@ -147,17 +147,40 @@
                     ]);
                 },
 
-                checkIfShowtime() {
+                blastConfetti() {
+                    confetti({
+                        particleCount: 100,
+                        spread: 50,
+                        origin: { y: 0.7 },
+                        scalar: 2,
+                        shapes: [confetti.shapeFromText({text:'🐟', scalar: 2}), confetti.shapeFromText({text:'🐠', scalar: 2}), confetti.shapeFromText({text:'🌿', scalar: 2})]
+                    });
+                },
+
+                checkIfShowtime(alpineObj) {
                     if (new URLSearchParams(window.location.search).get('debug')) {
-                        this.isShowtime = true;
+                        alpineObj.isShowtime = true;
+                        return;
+                    }
+
+                    if (new URLSearchParams(window.location.search).get('debugwithconfetti')) {
+                        alpineObj.isShowtime = true;
+                        if (chance.bool()) {
+                            alpineObj.blastConfetti();
+                        }
                         return;
                     }
 
                     const d = new Date();
                     if (((d.getMinutes() == 11)&&(d.getHours() == 11)) || ((d.getDate() == 10) && (d.getMonth() == 3) && (d.getFullYear() == 2022))) {
-                        this.isShowtime = true;
+                        // It's showtime! Is it just now becoming showtime?
+                        if (alpineObj.isShowtime === false) {
+                            // It is newly showtime!
+                            alpineObj.blastConfetti();
+                        }
+                        alpineObj.isShowtime = true;
                     } else {
-                        this.isShowtime = false;
+                        alpineObj.isShowtime = false;
                     }
                 },
 
@@ -185,13 +208,13 @@
                         { x: 100, y: 100 },
                         { x: 100, y: 0 },
                     ]
-                    let treemap = new voronoi.Treemap({children: this.fish}, voronoi.Polygon.create(100,100,50), 90, 90);
+                    let treemap = new voronoi.Treemap({children: this.fish}, voronoi.Polygon.create(90,90,50), 90, 90);
                     treemap.compute();
                     console.log(treemap);
                     this.fish = treemap.sites;
 
-                    this.checkIfShowtime()
-                    setInterval(this.checkIfShowtime, 1000);
+                    this.checkIfShowtime(this)
+                    setInterval(this.checkIfShowtime, 1000, this);
                 }
             }));
         });
