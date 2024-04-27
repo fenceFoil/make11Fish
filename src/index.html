@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="favicon.ico">
     <link rel="stylesheet" href="normalize.css">
-    <title>Cthulhu Fish</title>
+    <title>Make 11 Fish</title>
     <noscript>Hello Ryan! Behold the fallback fish: 🐟</noscript>
     <style>
         #app {
@@ -23,6 +23,7 @@
             flex-direction: column;
             place-items: center;
             font-size: 3vmin;
+            font-family: sans-serif;
         }
 
         #fishbox {
@@ -48,7 +49,7 @@
             left: 0;
             right: 0;
             text-align: center;
-            content: "11:11:11 make 11 fish";
+            content: "11:11 make 11 fish";
         }
 
         .fish {
@@ -63,9 +64,9 @@
     <div id="app" x-data="d">
         <!-- 🐟 🎣🐠🐡🦈🐳💧🌿🦑🐙⛵🐚🦐 -->
         <div id="fishbox">
-            <div id="fishboxWater">
+            <div id="fishboxWater" x-show="isShowtime">
                 <template x-for="currFish in fish" x-key="1">
-                    <div class="fish" x-text="currFish.icon" :style="{ transform: 'scale('+currFish.scale+') scaleX('+(currFish.mirrored?'-':'')+'1) rotate('+currFish.angleTurn+'turn)', top: currFish.x+'%', left: currFish.y+'%' }">
+                    <div class="fish" x-text="currFish.icon" :style="{ transform: 'scale('+currFish.scale+') scaleX('+(currFish.mirrored?'-':'')+'1) rotate('+currFish.angleTurn+'turn)', top: currFish.x+'%', left: currFish.y+'%', filter: 'hue-rotate('+currFish.hueAngle+'deg)' }">
                     </div>
                 </template>
             </div>
@@ -84,6 +85,7 @@
             Alpine.data('d', () => ({
                 fish: [],
                 nextFishId: 0,
+                isShowtime: false,
 
                 chooseEmoji() {
                     return chance.weighted([
@@ -105,7 +107,7 @@
                         '🍤',
                         '🦐',
                     ], [
-                        150,
+                        500,
                         75,
                         30,
                         10,
@@ -125,16 +127,29 @@
                     ]);
                 },
 
+                checkIfShowtime() {
+                    const d = new Date();
+                    if (((d.getMinutes() == 11)&&(d.getHours() == 11)) || ((d.getDate() == 10) && (d.getMonth() == 3) && (d.getFullYear() == 2022))) {
+                        this.isShowtime = true;
+                    } else {
+                        this.isShowtime = false;
+                    }
+                },
+
                 async init() {
                     Array.from(Array(11).keys()).forEach(() => {
                         let newFish = {
                             x: chance.floating({ min: 0.05, max: 0.95 }),
                             y: chance.floating({ min: 0.05, max: 0.95 }),
-                            scale: chance.floating({ min:0.6, max:3}),
+                            scale: chance.floating({ min:0.6, max:2.5}),
                             mirrored: chance.bool(),
-                            angleTurn: chance.floating({ min: -0.05, max: 0.05})
+                            angleTurn: chance.floating({ min: -0.05, max: 0.05}),
+                            hueAngle: 0,
                         }
                         newFish.icon = this.chooseEmoji();
+                        if (newFish.icon === '🐟') {
+                            newFish.hueAngle = chance.bool()?chance.floating({ min: 0, max: 360 }):0;
+                        }
                         newFish.value = this.nextFishId++;
                         this.fish.push(newFish);
                     });
@@ -148,6 +163,9 @@
                     treemap.compute();
                     console.log(treemap);
                     this.fish = treemap.sites;
+
+                    this.checkIfShowtime()
+                    setInterval(this.checkIfShowtime, 1000);
                 }
             }));
         });
