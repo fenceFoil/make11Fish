@@ -98,6 +98,7 @@
                 fish: [],
                 nextFishId: 0,
                 isShowtime: false,
+                firstShowtimeCheck: true,
 
                 colorfulEmoji: ['🐟', '🐚', '🦴',],
 
@@ -170,16 +171,20 @@
                     }
 
                     const d = new Date();
-                    if (((d.getMinutes() == 11)&&(d.getHours() == 11)) || ((d.getDate() == 10) && (d.getMonth() == 3) && (d.getFullYear() == 2022))) {
+                    if (((d.getMinutes() == 11) && ((d.getHours() % 12) == 11)) || ((d.getDate() == 10) && (d.getMonth() == 3) && (d.getFullYear() == 2022))) {
                         // It's showtime! Is it just now becoming showtime?
-                        if (alpineObj.isShowtime === false) {
+                        if (alpineObj.isShowtime === false && alpineObj.firstShowtimeCheck === false) {
                             // It is newly showtime!
                             alpineObj.blastConfetti();
                         }
                         alpineObj.isShowtime = true;
                     } else {
-                        alpineObj.isShowtime = false;
+                        // Don't take away fishies
+                        if (!alpineObj.isShowtime) {
+                            alpineObj.isShowtime = false;
+                        }
                     }
+                    alpineObj.firstShowtimeCheck = false;
                 },
 
                 async init() {
